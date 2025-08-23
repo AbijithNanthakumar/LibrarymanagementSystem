@@ -1,4 +1,5 @@
 #include "DatabaseManager.h"
+#include "TransactionManager.h"
 
 DatabaseManager::DatabaseManager() : hEnv(NULL), hDbc(NULL), ret(SQL_SUCCESS) {}
 
@@ -10,14 +11,14 @@ bool DatabaseManager::connect() {
     // Allocate environment handle
     ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &hEnv);
     if (!SQL_SUCCEEDED(ret)) {
-        std::cerr << "❌ Error allocating environment handle\n";
+        std::cerr << "Error allocating environment handle\n";
         return false;
     }
 
     // Set the ODBC version environment attribute
     ret = SQLSetEnvAttr(hEnv, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0);
     if (!SQL_SUCCEEDED(ret)) {
-        std::cerr << "❌ Error setting ODBC version\n";
+        std::cerr << "Error setting ODBC version\n";
         SQLFreeHandle(SQL_HANDLE_ENV, hEnv);
         return false;
     }
@@ -25,7 +26,7 @@ bool DatabaseManager::connect() {
     // Allocate connection handle
     ret = SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDbc);
     if (!SQL_SUCCEEDED(ret)) {
-        std::cerr << "❌ Error allocating connection handle\n";
+        std::cerr << "Error allocating connection handle\n";
         SQLFreeHandle(SQL_HANDLE_ENV, hEnv);
         return false;
     }
@@ -34,29 +35,30 @@ bool DatabaseManager::connect() {
     SQLCHAR connStr[] = 
         "DRIVER={ODBC Driver 17 for SQL Server};"
         "SERVER=PSILENL082;"
-        "DATABASE=librarymanagementDb;"
+        "DATABASE=LibraryDB;"
         "Trusted_Connection=Yes;";
 
     // Try connecting
     ret = SQLDriverConnect(hDbc, NULL, connStr, SQL_NTS, NULL, 0, NULL, SQL_DRIVER_COMPLETE);
-    if (SQL_SUCCEEDED(ret)) {
-        std::cout << "✅ Connected to SQL Server successfully!\n";
+    if(SQL_SUCCEEDED(ret)) {
+        std::cout << "Connected to SQL Server successfully!\n";
         return true;
     } else {
-        std::cerr << "❌ Failed to connect to SQL Server.\n";
+        std::cerr << "Failed to connect to SQL Server.\n";
         printError("SQLDriverConnect", hDbc, SQL_HANDLE_DBC);
         disconnect(); // Clean up handles
         return false;
     }
 }
 
+
 void DatabaseManager::disconnect() {
-    if (hDbc) {
+    if(hDbc){
         SQLDisconnect(hDbc);
         SQLFreeHandle(SQL_HANDLE_DBC, hDbc);
         hDbc = NULL;
     }
-    if (hEnv) {
+    if(hEnv){
         SQLFreeHandle(SQL_HANDLE_ENV, hEnv);
         hEnv = NULL;
     }

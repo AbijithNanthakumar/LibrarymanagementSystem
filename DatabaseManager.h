@@ -17,11 +17,11 @@ public:
     DatabaseManager();
     ~DatabaseManager();
 
-    bool connect();                     // Connect to SQL Server
-    void disconnect();                 // Disconnect
-    bool isConnected();                // Check connection status
+    bool connect();                     
+    void disconnect();                 
+    bool isConnected();                
     void printError(const std::string& fn, SQLHANDLE handle, SQLSMALLINT type);
-    SQLHDBC getDbc();                  // Access the DB connection handle (needed for queries)
+    SQLHDBC getDbc();            
 };
 
 #endif
