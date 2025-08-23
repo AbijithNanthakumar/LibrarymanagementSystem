@@ -74,7 +74,8 @@ void booksMenu(DatabaseManager& db) {
         std::cout << "1. Add Book\n";
         std::cout << "2. View Books\n";
         std::cout << "3. Update Book\n";
-        std::cout << "4. Delete Book\n";  // ✅ New option added
+        std::cout << "4. Delete Book\n"; 
+        std::cout << "5. Search Books\n"; // ✅ New option added
         std::cout << "5. Back to Main Menu\n";
         std::cout << "=========================================\n";
         std::cout << "Enter your choice: ";
@@ -93,7 +94,10 @@ void booksMenu(DatabaseManager& db) {
             case 4:
                 BookManager::deleteBook(db);  // ✅ Call deleteBook method
                 break;
-            case 5:
+            case 5: 
+            BookManager::searchBooks(db);
+             break;
+            case 6:
                 std::cout << "Returning to Main Menu...\n";
                 break;
             default:

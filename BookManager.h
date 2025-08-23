@@ -10,6 +10,8 @@ public:
     static void updateBook(DatabaseManager& db);
     static void deleteBook(DatabaseManager& db);
     static void searchBooks(DatabaseManager& db);
+    static void bulkImportBooks(DatabaseManager& db);
+
 };
 
 #endif

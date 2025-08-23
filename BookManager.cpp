@@ -535,3 +535,89 @@ void BookManager::searchBooks(DatabaseManager& db) {
 
     SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 }
+
+
+#include <fstream>  // For file I/O
+#include <sstream>  // For string stream (CSV parsing)
+
+// ====================
+// Function: bulkImportBooks()
+// Purpose: Read a CSV file and insert books into the database
+// ====================
+void BookManager::bulkImportBooks(DatabaseManager& db) {
+    if (!db.isConnected()) {
+        std::cerr << "❌ Not connected to database.\n";
+        return;
+    }
+
+    std::string filename;
+    std::cout << "Enter CSV file path (e.g., books.csv): ";
+    std::cin >> filename;
+
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "❌ Failed to open file: " << filename << "\n";
+        return;
+    }
+
+    std::string line;
+    int imported = 0;
+    int failed = 0;
+
+    while (getline(file, line)) {
+        std::stringstream ss(line);
+        std::string title, author, genre, publisher, isbn, edition, rackLocation, language;
+        int year;
+        float price;
+
+        // Parse CSV fields
+        getline(ss, title, ',');
+        getline(ss, author, ',');
+        getline(ss, genre, ',');
+        getline(ss, publisher, ',');
+        getline(ss, isbn, ',');
+        getline(ss, edition, ',');
+        ss >> year;
+        ss.ignore(); // skip comma
+        ss >> price;
+        ss.ignore(); // skip comma
+        getline(ss, rackLocation, ',');
+        getline(ss, language);
+
+        SQLHSTMT stmt;
+        SQLRETURN ret;
+        std::string query =
+            "INSERT INTO Books (Title, Author, Genre, Publisher, ISBN, Edition, PublishedYear, Price, RackLocation, Language, Availability) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Yes')";
+
+        ret = SQLAllocHandle(SQL_HANDLE_STMT, db.getDbc(), &stmt);
+        if (SQL_SUCCEEDED(ret)) {
+            // Bind parameters
+            SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 100, 0, (SQLPOINTER)title.c_str(), 0, NULL);
+            SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 100, 0, (SQLPOINTER)author.c_str(), 0, NULL);
+            SQLBindParameter(stmt, 3, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 100, 0, (SQLPOINTER)genre.c_str(), 0, NULL);
+            SQLBindParameter(stmt, 4, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 100, 0, (SQLPOINTER)publisher.c_str(), 0, NULL);
+            SQLBindParameter(stmt, 5, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 20, 0, (SQLPOINTER)isbn.c_str(), 0, NULL);
+            SQLBindParameter(stmt, 6, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 50, 0, (SQLPOINTER)edition.c_str(), 0, NULL);
+            SQLBindParameter(stmt, 7, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &year, 0, NULL);
+            SQLBindParameter(stmt, 8, SQL_PARAM_INPUT, SQL_C_FLOAT, SQL_REAL, 0, 0, &price, 0, NULL);
+            SQLBindParameter(stmt, 9, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 50, 0, (SQLPOINTER)rackLocation.c_str(), 0, NULL);
+            SQLBindParameter(stmt, 10, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 50, 0, (SQLPOINTER)language.c_str(), 0, NULL);
+
+            ret = SQLExecDirect(stmt, (SQLCHAR*)query.c_str(), SQL_NTS);
+
+            if (SQL_SUCCEEDED(ret)) {
+                imported++;
+            } else {
+                failed++;
+                std::cerr << "❌ Failed to insert: " << title << "\n";
+                db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
+            }
+
+            SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+        }
+    }
+
+    file.close();
+    std::cout << "✅ Import complete. Imported: " << imported << ", Failed: " << failed << "\n";
+}
