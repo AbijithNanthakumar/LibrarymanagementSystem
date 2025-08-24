@@ -12,7 +12,7 @@ using namespace std;
 
 void ReportManager::viewTopIssuedBooks(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to database.\n";
+        cerr << "Not connected to database.\n";
         return;
     }
 
@@ -38,7 +38,7 @@ void ReportManager::viewTopIssuedBooks(DatabaseManager& db) {
             SQLBindCol(stmt, 1, SQL_C_CHAR, title, sizeof(title), NULL);
             SQLBindCol(stmt, 2, SQL_C_SLONG, &count, 0, NULL);
 
-            cout << "\n📚 Top 10 Issued Books:\n";
+            cout << "\nTop 10 Issued Books:\n";
             cout << "-------------------------------------\n";
             cout << "Title\t\tTimes Issued\n";
             cout << "-------------------------------------\n";
@@ -59,7 +59,7 @@ void ReportManager::viewTopIssuedBooks(DatabaseManager& db) {
 // Most users:::
 void ReportManager::viewMostActiveMembers(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to database.\n";
+        cerr << " Not connected to database.\n";
         return;
     }
 
@@ -184,7 +184,7 @@ void ReportManager::exportReportToCSV(DatabaseManager& db) {
 
     ofstream outFile(filename);
     if (!outFile.is_open()) {
-        cerr << "❌ Failed to create file.\n";
+        cerr << " Failed to create file.\n";
         SQLFreeHandle(SQL_HANDLE_STMT, stmt);
         return;
     }

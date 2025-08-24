@@ -7,7 +7,7 @@ using namespace std;
 
 void TransactionManager::issueBook(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Database not connected.\n";
+        cerr << "Database not connected.\n";
         return;
     }
 
@@ -33,12 +33,12 @@ void TransactionManager::issueBook(DatabaseManager& db) {
             SQLGetData(stmt, 1, SQL_C_CHAR, availability, sizeof(availability), NULL);
 
             if (string(availability) != "Yes") {
-                cerr << "❌ Book not available.\n";
+                cerr << "Book not available.\n";
                 SQLFreeHandle(SQL_HANDLE_STMT, stmt);
                 return;
             }
         } else {
-            cerr << "❌ Book not found.\n";
+            cerr << "Book not found.\n";
             SQLFreeHandle(SQL_HANDLE_STMT, stmt);
             return;
         }
@@ -56,7 +56,7 @@ void TransactionManager::issueBook(DatabaseManager& db) {
 
         ret = SQLExecDirect(stmt, (SQLCHAR*)insertQuery.c_str(), SQL_NTS);
         if (SQL_SUCCEEDED(ret)) {
-            cout << "✅ Book issued successfully!\n";
+            cout << "Book issued successfully!\n";
 
             // Update book availability
             SQLFreeHandle(SQL_HANDLE_STMT, stmt);
@@ -65,7 +65,7 @@ void TransactionManager::issueBook(DatabaseManager& db) {
             SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &bookId, 0, NULL);
             SQLExecDirect(stmt, (SQLCHAR*)updateQuery.c_str(), SQL_NTS);
         } else {
-            cerr << "❌ Failed to issue book.\n";
+            cerr << "Failed to issue book.\n";
             db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
         }
 
@@ -75,7 +75,7 @@ void TransactionManager::issueBook(DatabaseManager& db) {
 
 void TransactionManager::returnBook(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Database not connected.\n";
+        cerr << "Database not connected.\n";
         return;
     }
 
@@ -99,7 +99,7 @@ void TransactionManager::returnBook(DatabaseManager& db) {
             SQLGetData(stmt, 1, SQL_C_SLONG, &bookId, 0, NULL);
             SQLGetData(stmt, 2, SQL_C_TYPE_DATE, &dueDate, 0, NULL);
         } else {
-            cerr << "❌ Transaction not found or already returned.\n";
+            cerr << "Transaction not found or already returned.\n";
             SQLFreeHandle(SQL_HANDLE_STMT, stmt);
             return;
         }
@@ -117,7 +117,7 @@ void TransactionManager::returnBook(DatabaseManager& db) {
         SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &transactionId, 0, NULL);
         ret = SQLExecDirect(stmt, (SQLCHAR*)updateQuery.c_str(), SQL_NTS);
         if (SQL_SUCCEEDED(ret)) {
-            cout << "✅ Book returned successfully!\n";
+            cout << "Book returned successfully!\n";
 
             // Update book availability
             SQLFreeHandle(SQL_HANDLE_STMT, stmt);
@@ -126,7 +126,7 @@ void TransactionManager::returnBook(DatabaseManager& db) {
             SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &bookId, 0, NULL);
             SQLExecDirect(stmt, (SQLCHAR*)updateBook.c_str(), SQL_NTS);
         } else {
-            cerr << "❌ Failed to return book.\n";
+            cerr << "Failed to return book.\n";
             db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
         }
 
@@ -135,12 +135,94 @@ void TransactionManager::returnBook(DatabaseManager& db) {
 }
 
 void TransactionManager::reserveBook(DatabaseManager& db) {
-    cout << "🕒 Reserve feature to be implemented with queue support.\n";
+    if (!db.isConnected()) {
+        cerr << "Database not connected.\n";
+        return;
+    }
+
+    int memberId, bookId;
+    cout << "Enter Member ID: ";
+    cin >> memberId;
+    cout << "Enter Book ID to reserve: ";
+    cin >> bookId;
+
+    SQLHSTMT stmt;
+    SQLRETURN ret;
+
+    // 1. Check if book exists and is NOT available
+    string checkQuery = "SELECT Availability FROM Books WHERE BookID = ?";
+    ret = SQLAllocHandle(SQL_HANDLE_STMT, db.getDbc(), &stmt);
+
+    if (!SQL_SUCCEEDED(ret)) {
+        cerr << "Failed to allocate statement handle.\n";
+        return;
+    }
+
+    SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &bookId, 0, NULL);
+    ret = SQLExecDirect(stmt, (SQLCHAR*)checkQuery.c_str(), SQL_NTS);
+
+    char availability[10] = {0};
+    if (SQLFetch(stmt) == SQL_SUCCESS) {
+        SQLGetData(stmt, 1, SQL_C_CHAR, availability, sizeof(availability), NULL);
+
+        if (string(availability) == "Yes") {
+            cerr << "Book is currently available. No need to reserve.\n";
+            SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+            return;
+        }
+    } else {
+        cerr << "Book not found.\n";
+        SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+        return;
+    }
+
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+
+    // 2. Check if the member has already reserved this book
+    string existsQuery = "SELECT COUNT(*) FROM Reservations WHERE MemberID = ? AND BookID = ?";
+    ret = SQLAllocHandle(SQL_HANDLE_STMT, db.getDbc(), &stmt);
+
+    SQLINTEGER count = 0;
+    if (SQL_SUCCEEDED(ret)) {
+        SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &memberId, 0, NULL);
+        SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &bookId, 0, NULL);
+
+        ret = SQLExecDirect(stmt, (SQLCHAR*)existsQuery.c_str(), SQL_NTS);
+        if (SQLFetch(stmt) == SQL_SUCCESS) {
+            SQLGetData(stmt, 1, SQL_C_SLONG, &count, 0, NULL);
+        }
+        SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    }
+
+    if (count > 0) {
+        cout << "You have already reserved this book.\n";
+        return;
+    }
+
+    // 3. Insert into Reservations
+    string insertQuery = "INSERT INTO Reservations (MemberID, BookID, ReservationDate) VALUES (?, ?, GETDATE())";
+    ret = SQLAllocHandle(SQL_HANDLE_STMT, db.getDbc(), &stmt);
+
+    if (SQL_SUCCEEDED(ret)) {
+        SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &memberId, 0, NULL);
+        SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &bookId, 0, NULL);
+
+        ret = SQLExecDirect(stmt, (SQLCHAR*)insertQuery.c_str(), SQL_NTS);
+        if (SQL_SUCCEEDED(ret)) {
+            cout << "Book reserved successfully. You will be notified when it becomes available.\n";
+        } else {
+            cerr << "Failed to reserve book.\n";
+            db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
+        }
+
+        SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    }
 }
+
 
 void TransactionManager::showTransactionHistory(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to the database.\n";
+        cerr << "Not connected to the database.\n";
         return;
     }
 
@@ -174,7 +256,7 @@ void TransactionManager::showTransactionHistory(DatabaseManager& db) {
             SQLBindCol(stmt, 7, SQL_C_TYPE_DATE, &returnDate, 0, &returnDateInd);
             SQLBindCol(stmt, 8, SQL_C_FLOAT, &fine, 0, NULL);
 
-            cout << "\n📚 Transaction History:\n";
+            cout << "\nTransaction History:\n";
             cout << "--------------------------------------------------------------------------------\n";
             cout << "ID\tMemberID\tBookID\tTitle\t\tIssueDate\tDueDate\t\tReturnDate\tFine\n";
             cout << "--------------------------------------------------------------------------------\n";
@@ -194,11 +276,11 @@ void TransactionManager::showTransactionHistory(DatabaseManager& db) {
                 cout << "\t" << fine << "\n";
             }
         } else {
-            cerr << "❌ Failed to fetch transaction history.\n";
+            cerr << "Failed to fetch transaction history.\n";
             db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
         }
         SQLFreeHandle(SQL_HANDLE_STMT, stmt);
     } else {
-        cerr << "❌ Failed to allocate SQL statement handle.\n";
+        cerr << "Failed to allocate SQL statement handle.\n";
     }
 }
