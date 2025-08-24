@@ -74,7 +74,7 @@ void booksMenu(DatabaseManager& db) {
     int choice;
     do {
         // system("cls");  // Clear screen for a clean UI
-        std::cout << "========== 📚 Books Management ==========\n";
+        std::cout << "========== Books Management ==========\n";
         std::cout << "1. Add Book\n";
         std::cout << "2. View Books\n";
         std::cout << "3. Update Book\n";
@@ -109,13 +109,11 @@ void booksMenu(DatabaseManager& db) {
                 std::cout << "Returning to Main Menu...\n";
                 break;
             default:
-                std::cout << "❌ Invalid choice. Try again.\n";
+                std::cout << " Invalid choice. Try again.\n";
         }
 
         if (choice != 5) {
-            std::cin.ignore();
-            std::cout << "\nPress Enter to continue...";
-            std::cin.get();
+            pause();
         }
 
     } while (choice != 5);
@@ -155,10 +153,10 @@ void membersMenu(DatabaseManager& db) {
                 memberManager.searchMembers(db);
                 break;
             case 6:
-                cout << "🔙 Returning to Main Menu...\n";
+                cout << "Returning to Main Menu...\n";
                 break;
             default:
-                cout << "❗ Invalid choice. Please try again.\n";
+                cout << "Invalid choice. Please try again.\n";
         }
 
     } while (choice != 6);
@@ -193,10 +191,10 @@ void transactionsMenu(DatabaseManager& db) {
                 transactionManager.showTransactionHistory(db);
                 break;
             case 5:
-                cout << "🔙 Returning to Main Menu...\n";
+                cout << "Returning to Main Menu...\n";
                 break;
             default:
-                cout << "❗ Invalid choice. Please try again.\n";
+                cout << "Invalid choice. Please try again.\n";
         }
 
     } while (choice != 5);
@@ -232,10 +230,10 @@ void reportsMenu(DatabaseManager& db) {
                 reportManager.exportReportToCSV(db);
                 break;
             case 5:
-                cout << "🔙 Returning to Main Menu...\n";
+                cout << "Returning to Main Menu...\n";
                 break;
             default:
-                cout << "❗ Invalid choice. Please try again.\n";
+                cout << "Invalid choice. Please try again.\n";
         }
 
     } while (choice != 5);

@@ -14,7 +14,7 @@ using namespace std;
 // ====================
 void BookManager::addBook(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to database.\n";
+        cerr << "Not connected to database.\n";
         return;
     }
 
@@ -59,6 +59,7 @@ void BookManager::addBook(DatabaseManager& db) {
     // Allocate statement handle
     ret = SQLAllocHandle(SQL_HANDLE_STMT, db.getDbc(), &stmt);
 
+
     if (SQL_SUCCEEDED(ret)) {
         // Bind input parameters to SQL statement
         SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 100, 0, (SQLPOINTER)title.c_str(), 0, NULL);
@@ -70,15 +71,15 @@ void BookManager::addBook(DatabaseManager& db) {
         SQLBindParameter(stmt, 7, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &publishedYear, 0, NULL);
         SQLBindParameter(stmt, 8, SQL_PARAM_INPUT, SQL_C_FLOAT, SQL_REAL, 0, 0, &price, 0, NULL);
         SQLBindParameter(stmt, 9, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 50, 0, (SQLPOINTER)rackLocation.c_str(), 0, NULL);
-        SQLBindParameter(stmt, 10, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 50, 0, (SQLPOINTER)language.c_str(), 0, NULL);
+        SQLBindParameter(stmt, 10,SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR, 50, 0, (SQLPOINTER)language.c_str(), 0, NULL);
 
         // Execute the statement
         ret = SQLExecDirect(stmt, (SQLCHAR*)query.c_str(), SQL_NTS);
 
         if (SQL_SUCCEEDED(ret)) {
-            cout << "✅ Book added successfully!\n";
+            cout << "Book added successfully!\n";
         } else {
-            cerr << "❌ Failed to add book.\n";
+            cerr << "Failed to add book.\n";
             db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
         }
 
@@ -87,13 +88,14 @@ void BookManager::addBook(DatabaseManager& db) {
     }
 }
 
-// ====================
+
+// ==========================
 // Function: viewBooks()
 // Purpose: Show books in pages of 5 at a time (pagination)
-// ====================
+// ==========================
 void BookManager::viewBooks(DatabaseManager& db) {
     if (!db.isConnected()) {
-        std::cerr << "❌ Not connected to database.\n";
+        std::cerr << "Not connected to database.\n";
         return;
     }
 
@@ -103,7 +105,7 @@ void BookManager::viewBooks(DatabaseManager& db) {
     // Allocate statement handle
     ret = SQLAllocHandle(SQL_HANDLE_STMT, db.getDbc(), &stmt);
     if (!SQL_SUCCEEDED(ret)) {
-        std::cerr << "❌ Failed to allocate statement handle.\n";
+        std::cerr << "Failed to allocate statement handle.\n";
         return;
     }
 
@@ -125,23 +127,23 @@ void BookManager::viewBooks(DatabaseManager& db) {
         // Prepare the statement
         ret = SQLPrepare(stmt, (SQLCHAR*)query.c_str(), SQL_NTS);
         if (!SQL_SUCCEEDED(ret)) {
-            std::cerr << "❌ Failed to prepare SQL statement.\n";
+            std::cerr << "Failed to prepare SQL statement.\n";
             db.printError("SQLPrepare", stmt, SQL_HANDLE_STMT);
             break;
         }
 
-        // Bind OFFSET parameter (first ?)
+        // Bind OFFSET parameter (first ?) // how many it can skip and display 
         ret = SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &offset, 0, NULL);
         if (!SQL_SUCCEEDED(ret)) {
-            std::cerr << "❌ Failed to bind OFFSET parameter.\n";
+            std::cerr << "Failed to bind OFFSET parameter.\n";
             db.printError("SQLBindParameter", stmt, SQL_HANDLE_STMT);
             break;
         }
 
-        // Bind FETCH NEXT parameter (second ?)
+        // Bind FETCH NEXT parameter (second ?) // how many row to fetch
         ret = SQLBindParameter(stmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &pageSize, 0, NULL);
         if (!SQL_SUCCEEDED(ret)) {
-            std::cerr << "❌ Failed to bind FETCH NEXT parameter.\n";
+            std::cerr << "Failed to bind FETCH NEXT parameter.\n";
             db.printError("SQLBindParameter", stmt, SQL_HANDLE_STMT);
             break;
         }
@@ -149,7 +151,7 @@ void BookManager::viewBooks(DatabaseManager& db) {
         // Execute the query
         ret = SQLExecute(stmt);
         if (!SQL_SUCCEEDED(ret)) {
-            std::cerr << "❌ Failed to execute SQL statement.\n";
+            std::cerr << "Failed to execute SQL statement.\n";
             db.printError("SQLExecute", stmt, SQL_HANDLE_STMT);
             break;
         }
@@ -160,13 +162,13 @@ void BookManager::viewBooks(DatabaseManager& db) {
         char author[100] = {0};
         char isbn[20] = {0};
 
-        // Bind columns to variables
+        // Bind columns to variables // one variable value at a time 
         SQLBindCol(stmt, 1, SQL_C_SLONG, &bookID, 0, NULL);
         SQLBindCol(stmt, 2, SQL_C_CHAR, title, sizeof(title), NULL);
         SQLBindCol(stmt, 3, SQL_C_CHAR, author, sizeof(author), NULL);
         SQLBindCol(stmt, 4, SQL_C_CHAR, isbn, sizeof(isbn), NULL);
 
-        std::cout << "\n📚 List of Books (Page " << (pageNum + 1) << "):\n";
+        std::cout << "\nList of Books (Page " << (pageNum + 1) << "):\n";
         std::cout << "--------------------------------------------------\n";
         std::cout << "ID\tTitle\t\tAuthor\t\tISBN\n";
         std::cout << "--------------------------------------------------\n";
@@ -178,6 +180,7 @@ void BookManager::viewBooks(DatabaseManager& db) {
             std::cout << bookID << "\t" << title << "\t" << author << "\t" << isbn << "\n";
             rowCount++;
         }
+
 
         // If no rows returned, means no more data
         if (rowCount == 0) {
@@ -212,7 +215,7 @@ void BookManager::viewBooks(DatabaseManager& db) {
 // UpdateBook
 void BookManager::updateBook(DatabaseManager& db) {
     if (!db.isConnected()) {
-        std::cerr << "❌ Not connected to database.\n";
+        std::cerr << "Not connected to database.\n";
         return;
     }
 
@@ -225,14 +228,14 @@ void BookManager::updateBook(DatabaseManager& db) {
     SQLHSTMT stmt;
     SQLRETURN ret = SQLAllocHandle(SQL_HANDLE_STMT, db.getDbc(), &stmt);
     if (!SQL_SUCCEEDED(ret)) {
-        std::cerr << "❌ Error allocating statement handle.\n";
+        std::cerr << "Error allocating statement handle.\n";
         return;
     }
 
     std::string selectQuery = "SELECT Title, Author, Genre, Publisher, ISBN, Edition, PublishedYear, Price, RackLocation, Language FROM Books WHERE BookID = ?";
     ret = SQLPrepare(stmt, (SQLCHAR*)selectQuery.c_str(), SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
-        std::cerr << "❌ Failed to prepare select statement.\n";
+        std::cerr << "Failed to prepare select statement.\n";
         db.printError("SQLPrepare", stmt, SQL_HANDLE_STMT);
         SQLFreeHandle(SQL_HANDLE_STMT, stmt);
         return;
@@ -241,7 +244,7 @@ void BookManager::updateBook(DatabaseManager& db) {
     SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER, 0, 0, &bookID, 0, NULL);
     ret = SQLExecute(stmt);
     if (!SQL_SUCCEEDED(ret)) {
-        std::cerr << "❌ Failed to execute select statement.\n";
+        std::cerr << "Failed to execute select statement.\n";
         db.printError("SQLExecute", stmt, SQL_HANDLE_STMT);
         SQLFreeHandle(SQL_HANDLE_STMT, stmt);
         return;
@@ -265,7 +268,7 @@ void BookManager::updateBook(DatabaseManager& db) {
 
     ret = SQLFetch(stmt);
     if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO) {
-        std::cerr << "❌ Book ID not found.\n";
+        std::cerr << "Book ID not found.\n";
         SQLFreeHandle(SQL_HANDLE_STMT, stmt);
         return;
     }
@@ -326,7 +329,7 @@ void BookManager::updateBook(DatabaseManager& db) {
     // Step 3: Update the database record
     ret = SQLAllocHandle(SQL_HANDLE_STMT, db.getDbc(), &stmt);
     if (!SQL_SUCCEEDED(ret)) {
-        std::cerr << "❌ Error allocating statement handle for update.\n";
+        std::cerr << "Error allocating statement handle for update.\n";
         return;
     }
 
@@ -336,7 +339,7 @@ void BookManager::updateBook(DatabaseManager& db) {
 
     ret = SQLPrepare(stmt, (SQLCHAR*)updateQuery.c_str(), SQL_NTS);
     if (!SQL_SUCCEEDED(ret)) {
-        std::cerr << "❌ Failed to prepare update statement.\n";
+        std::cerr << "Failed to prepare update statement.\n";
         db.printError("SQLPrepare", stmt, SQL_HANDLE_STMT);
         SQLFreeHandle(SQL_HANDLE_STMT, stmt);
         return;
@@ -357,9 +360,9 @@ void BookManager::updateBook(DatabaseManager& db) {
 
     ret = SQLExecute(stmt);
     if (SQL_SUCCEEDED(ret)) {
-        std::cout << "✅ Book updated successfully!\n";
+        std::cout << "Book updated successfully!\n";
     } else {
-        std::cerr << "❌ Failed to update book.\n";
+        std::cerr << "Failed to update book.\n";
         db.printError("SQLExecute", stmt, SQL_HANDLE_STMT);
     }
 
@@ -373,7 +376,7 @@ void BookManager::updateBook(DatabaseManager& db) {
 // ====================
 void BookManager::deleteBook(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to database.\n";
+        cerr << "Not connected to database.\n";
         return;
     }
 
@@ -399,7 +402,7 @@ void BookManager::deleteBook(DatabaseManager& db) {
         SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 
         if (count == 0) {
-            cout << "❌ BookID not found.\n";
+            cout << "BookID not found.\n";
             return;
         }
     }
@@ -419,7 +422,7 @@ void BookManager::deleteBook(DatabaseManager& db) {
         SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 
         if (count > 0) {
-            cout << "⚠️ Cannot delete. Book is currently issued or reserved.\n";
+            cout << "Cannot delete. Book is currently issued or reserved.\n";
             return;
         }
     }
@@ -434,9 +437,9 @@ void BookManager::deleteBook(DatabaseManager& db) {
         ret = SQLExecute(stmt);
 
         if (SQL_SUCCEEDED(ret)) {
-            cout << "✅ Book deleted successfully.\n";
+            cout << "Book deleted successfully.\n";
         } else {
-            cerr << "❌ Failed to delete book.\n";
+            cerr << "Failed to delete book.\n";
             db.printError("SQLExecute", stmt, SQL_HANDLE_STMT);
         }
 
@@ -451,14 +454,14 @@ void BookManager::deleteBook(DatabaseManager& db) {
 // ====================
 void BookManager::searchBooks(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to database.\n";
+        cerr << "Not connected to database.\n";
         return;
     }
 
     int option;
     string column, searchValue;
 
-    cout << "\n🔍 Search Books By:\n";
+    cout << "\nSearch Books By:\n";
     cout << "1. Title\n";
     cout << "2. Author\n";
     cout << "3. ISBN\n";
@@ -472,7 +475,7 @@ void BookManager::searchBooks(DatabaseManager& db) {
         case 3: column = "ISBN"; break;
         case 4: column = "Genre"; break;
         default:
-            cout << "❌ Invalid option.\n";
+            cout << "Invalid option.\n";
             return;
     }
 
@@ -485,7 +488,7 @@ void BookManager::searchBooks(DatabaseManager& db) {
 
     ret = SQLAllocHandle(SQL_HANDLE_STMT, db.getDbc(), &stmt);
     if (!SQL_SUCCEEDED(ret)) {
-        cerr << "❌ Failed to allocate statement.\n";
+        cerr << "Failed to allocate statement.\n";
         return;
     }
 
@@ -506,7 +509,7 @@ void BookManager::searchBooks(DatabaseManager& db) {
         SQLBindCol(stmt, 3, SQL_C_CHAR, author, sizeof(author), NULL);
         SQLBindCol(stmt, 4, SQL_C_CHAR, isbn, sizeof(isbn), NULL);
 
-        cout << "\n🔎 Search Results (5 per page):\n";
+        cout << "\nSearch Results (5 per page):\n";
         cout << "----------------------------------------------\n";
         cout << "ID\tTitle\t\tAuthor\t\tISBN\n";
         cout << "----------------------------------------------\n";
@@ -526,10 +529,10 @@ void BookManager::searchBooks(DatabaseManager& db) {
         }
 
         if (count == 0) {
-            cout << "❌ No matching records found.\n";
+            cout << "No matching records found.\n";
         }
     } else {
-        cerr << "❌ Failed to execute search query.\n";
+        cerr << "Failed to execute search query.\n";
         db.printError("SQLExecute", stmt, SQL_HANDLE_STMT);
     }
 
@@ -546,7 +549,7 @@ void BookManager::searchBooks(DatabaseManager& db) {
 // ====================
 void BookManager::bulkImportBooks(DatabaseManager& db) {
     if (!db.isConnected()) {
-        std::cerr << "❌ Not connected to database.\n";
+        std::cerr << "Not connected to database.\n";
         return;
     }
 
@@ -556,7 +559,7 @@ void BookManager::bulkImportBooks(DatabaseManager& db) {
 
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "❌ Failed to open file: " << filename << "\n";
+        std::cerr << "Failed to open file: " << filename << "\n";
         return;
     }
 
@@ -610,7 +613,7 @@ void BookManager::bulkImportBooks(DatabaseManager& db) {
                 imported++;
             } else {
                 failed++;
-                std::cerr << "❌ Failed to insert: " << title << "\n";
+                std::cerr << "Failed to insert: " << title << "\n";
                 db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
             }
 
@@ -619,5 +622,5 @@ void BookManager::bulkImportBooks(DatabaseManager& db) {
     }
 
     file.close();
-    std::cout << "✅ Import complete. Imported: " << imported << ", Failed: " << failed << "\n";
+    std::cout << "Import complete. Imported: " << imported << ", Failed: " << failed << "\n";
 }

@@ -76,12 +76,12 @@ void DatabaseManager::printError(const std::string& fn, SQLHANDLE handle, SQLSMA
     SQLSMALLINT len;
     SQLRETURN ret;
 
-    std::cout << "🛠️ Diagnostics from " << fn << ":\n";
+    std::cout << "Diagnostics from " << fn << ":\n";
 
     do {
         ret = SQLGetDiagRec(type, handle, ++i, state, &native, text, sizeof(text), &len);
         if (SQL_SUCCEEDED(ret))
-            std::cout << "  ➤ " << state << " | Native Error: " << native 
+            std::cout << " " << state << " | Native Error: " << native 
                       << " | Message: " << text << "\n";
     } while (ret == SQL_SUCCESS);
 }

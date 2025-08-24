@@ -8,7 +8,7 @@ using namespace std;
 // ========== ADD MEMBER ==========
 void MemberManager::addMember(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to the database.\n";
+        cerr << "Not connected to the database.\n";
         return;
     }
 
@@ -52,9 +52,9 @@ void MemberManager::addMember(DatabaseManager& db) {
         ret = SQLExecDirect(stmt, (SQLCHAR*)query.c_str(), SQL_NTS);
 
         if (SQL_SUCCEEDED(ret)) {
-            cout << "✅ Member added successfully!\n";
+            cout << " Member added successfully!\n";
         } else {
-            cerr << "❌ Failed to add member.\n";
+            cerr << "Failed to add member.\n";
             db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
         }
 
@@ -67,7 +67,7 @@ void MemberManager::addMember(DatabaseManager& db) {
 // ========== VIEW MEMBERS ==========
 void MemberManager::viewMembers(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to the database.\n";
+        cerr << " Not connected to the database.\n";
         return;
     }
 
@@ -93,7 +93,7 @@ void MemberManager::viewMembers(DatabaseManager& db) {
             int count = 0;
             char choice;
 
-            cout << "\n👥 List of Members (5 per page):\n";
+            cout << "\nList of Members (5 per page):\n";
             cout << "---------------------------------------------------------\n";
             cout << "ID\tName\t\tEmail\t\tMembership\tStatus\n";
             cout << "---------------------------------------------------------\n";
@@ -110,7 +110,7 @@ void MemberManager::viewMembers(DatabaseManager& db) {
             }
 
         } else {
-            cerr << "❌ Failed to fetch members.\n";
+            cerr << "Failed to fetch members.\n";
             db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
         }
 
@@ -121,7 +121,7 @@ void MemberManager::viewMembers(DatabaseManager& db) {
 // ========== UPDATE MEMBER ==========
 void MemberManager::updateMember(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to the database.\n";
+        cerr << "Not connected to the database.\n";
         return;
     }
 
@@ -165,9 +165,9 @@ void MemberManager::updateMember(DatabaseManager& db) {
         ret = SQLExecDirect(stmt, (SQLCHAR*)query.c_str(), SQL_NTS);
 
         if (SQL_SUCCEEDED(ret)) {
-            cout << "✅ Member updated successfully!\n";
+            cout << " Member updated successfully!\n";
         } else {
-            cerr << "❌ Failed to update member.\n";
+            cerr << "Failed to update member.\n";
             db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
         }
 
@@ -178,7 +178,7 @@ void MemberManager::updateMember(DatabaseManager& db) {
 // ========== DELETE MEMBER ==========
 void MemberManager::deleteMember(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to the database.\n";
+        cerr << "Not connected to the database.\n";
         return;
     }
 
@@ -199,9 +199,9 @@ void MemberManager::deleteMember(DatabaseManager& db) {
         ret = SQLExecDirect(stmt, (SQLCHAR*)query.c_str(), SQL_NTS);
 
         if (SQL_SUCCEEDED(ret)) {
-            cout << "🗑️ Member marked as inactive.\n";
+            cout << "Member marked as inactive.\n";
         } else {
-            cerr << "❌ Failed to delete member.\n";
+            cerr << "Failed to delete member.\n";
             db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
         }
 
@@ -212,7 +212,7 @@ void MemberManager::deleteMember(DatabaseManager& db) {
 // ========== SEARCH MEMBERS ==========
 void MemberManager::searchMembers(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to the database.\n";
+        cerr << "Not connected to the database.\n";
         return;
     }
 
@@ -250,7 +250,7 @@ void MemberManager::searchMembers(DatabaseManager& db) {
             SQLBindCol(stmt, 4, SQL_C_CHAR, membership, sizeof(membership), NULL);
             SQLBindCol(stmt, 5, SQL_C_CHAR, status, sizeof(status), NULL);
 
-            cout << "\n🔍 Search Results:\n";
+            cout << "\nSearch Results:\n";
             cout << "---------------------------------------------------------\n";
             cout << "ID\tName\t\tEmail\t\tMembership\tStatus\n";
             cout << "---------------------------------------------------------\n";
@@ -260,7 +260,7 @@ void MemberManager::searchMembers(DatabaseManager& db) {
             }
 
         } else {
-            cerr << "❌ Failed to search members.\n";
+            cerr << "Failed to search members.\n";
             db.printError("SQLExecDirect", stmt, SQL_HANDLE_STMT);
         }
 

@@ -85,7 +85,7 @@ void ReportManager::viewMostActiveMembers(DatabaseManager& db) {
             SQLBindCol(stmt, 1, SQL_C_CHAR, name, sizeof(name), NULL);
             SQLBindCol(stmt, 2, SQL_C_SLONG, &transactionCount, 0, NULL);
 
-            cout << "\n👥 Most Active Members:\n";
+            cout << "\nMost Active Members:\n";
             cout << "------------------------------\n";
             cout << "Name\t\tTransactions\n";
             cout << "------------------------------\n";
@@ -105,7 +105,7 @@ void ReportManager::viewMostActiveMembers(DatabaseManager& db) {
 
 void ReportManager::generateFineSummary(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to database.\n";
+        cerr << "Not connected to database.\n";
         return;
     }
 
@@ -127,7 +127,7 @@ void ReportManager::generateFineSummary(DatabaseManager& db) {
             SQLBindCol(stmt, 1, SQL_C_FLOAT, &totalFines, 0, NULL);
 
             if (SQLFetch(stmt) == SQL_SUCCESS) {
-                cout << "\n💰 Fine Collection Summary:\n";
+                cout << "\nFine Collection Summary:\n";
                 cout << "--------------------------\n";
                 cout << "Total Fines Collected: ₹ " << totalFines << "\n";
             }
@@ -142,7 +142,7 @@ void ReportManager::generateFineSummary(DatabaseManager& db) {
 
 void ReportManager::exportReportToCSV(DatabaseManager& db) {
     if (!db.isConnected()) {
-        cerr << "❌ Not connected to database.\n";
+        cerr << "Not connected to database.\n";
         return;
     }
 
@@ -164,7 +164,7 @@ void ReportManager::exportReportToCSV(DatabaseManager& db) {
     ret = SQLAllocHandle(SQL_HANDLE_STMT, db.getDbc(), &stmt);
 
     if (!SQL_SUCCEEDED(ret)) {
-        cerr << "❌ Failed to allocate SQL handle.\n";
+        cerr << "Failed to allocate SQL handle.\n";
         return;
     }
 
@@ -196,7 +196,7 @@ void ReportManager::exportReportToCSV(DatabaseManager& db) {
     }
 
     outFile.close();
-    cout << "✅ Data exported successfully to " << filename << "\n";
+    cout << "Data exported successfully to " << filename << "\n";
 
     SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 }
