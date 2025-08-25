@@ -5,6 +5,7 @@
 #include "MemberManager.h"
 #include "TransactionManager.h"
 #include "ReportManager.h"
+#include "UserManager.h"
 using namespace std;
 
 
@@ -24,15 +25,18 @@ int main() {
     DatabaseManager db;
 
     if (!db.connect()) {
-        std::cerr << "❌ Database connection failed. Exiting." << std::endl;
+        std::cerr << "Database connection failed. Exiting." << std::endl;
         return 1;
     }
 
-    int choice;
+    UserManager userManager;
+
+     if (userManager.login(db)) {
+         int choice;
 
     do {
         system("cls"); // clear screen (Windows only)
-        std::cout << "========== 📚 Library Management ==========\n";
+        std::cout << "========== Library Management ==========\n";
         std::cout << "1. Books Management\n";
         std::cout << "2. Members Management\n";
         std::cout << "3. Transactions\n";
@@ -56,15 +60,16 @@ int main() {
                 reportsMenu(db);
                 break;
             case 5:
-                std::cout << "👋 Exiting the application. Goodbye!\n";
+                std::cout << "Exiting the application. Goodbye!\n";
                 break;
             default:
-                std::cout << "❌ Invalid choice. Try again.\n";
+                std::cout << "Invalid choice. Try again.\n";
         }
 
         if (choice != 5) pause();
 
     } while (choice != 5);
+    }
 
     db.disconnect();
     return 0;
@@ -86,6 +91,7 @@ void booksMenu(DatabaseManager& db) {
         std::cout << "Enter your choice: ";
         std::cin >> choice;
 
+
         switch (choice) {
             case 1:
                 BookManager::addBook(db);
@@ -97,7 +103,7 @@ void booksMenu(DatabaseManager& db) {
                 BookManager::updateBook(db);
                 break;
             case 4:
-                BookManager::deleteBook(db);  // ✅ Call deleteBook method
+                BookManager::deleteBook(db);  // Call deleteBook method
                 break;
             case 5: 
                 BookManager::searchBooks(db);
@@ -112,7 +118,7 @@ void booksMenu(DatabaseManager& db) {
                 std::cout << " Invalid choice. Try again.\n";
         }
 
-        if (choice != 5) {
+        if (choice != 7) {
             pause();
         }
 

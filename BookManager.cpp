@@ -3,15 +3,15 @@
 #include <iostream>
 #include <windows.h>
 #include <sql.h>
+#include <fstream>  // For file I/O
+#include <sstream>  // For string stream (CSV parsing)
 #include <sqlext.h>
 #include "DatabaseManager.h"
 
 using namespace std;
 
-// ====================
 // Function: addBook()
 // Purpose: Add a new book to the database with user input
-// ====================
 void BookManager::addBook(DatabaseManager& db) {
     if (!db.isConnected()) {
         cerr << "Not connected to database.\n";
@@ -369,7 +369,6 @@ void BookManager::updateBook(DatabaseManager& db) {
     SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 }
 
-
 // ====================
 // Function: deleteBook()
 // Purpose: Delete a book only if it is not issued or reserved
@@ -539,9 +538,6 @@ void BookManager::searchBooks(DatabaseManager& db) {
     SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 }
 
-
-#include <fstream>  // For file I/O
-#include <sstream>  // For string stream (CSV parsing)
 
 // ====================
 // Function: bulkImportBooks()

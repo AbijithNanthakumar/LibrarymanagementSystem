@@ -8,7 +8,8 @@ DatabaseManager::~DatabaseManager() {
 }
 
 bool DatabaseManager::connect() {
-    // Allocate environment handle
+
+    // Allocate environment handle:::::::::::::::::::::::::::::
     ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &hEnv);
     if (!SQL_SUCCEEDED(ret)) {
         std::cerr << "Error allocating environment handle\n";
@@ -30,6 +31,7 @@ bool DatabaseManager::connect() {
         SQLFreeHandle(SQL_HANDLE_ENV, hEnv);
         return false;
     }
+
 
     // Trusted Connection string
     SQLCHAR connStr[] = 
@@ -64,9 +66,11 @@ void DatabaseManager::disconnect() {
     }
 }
 
+
 bool DatabaseManager::isConnected() {
     return hDbc != NULL;
 }
+
 
 void DatabaseManager::printError(const std::string& fn, SQLHANDLE handle, SQLSMALLINT type) {
     SQLINTEGER i = 0;
